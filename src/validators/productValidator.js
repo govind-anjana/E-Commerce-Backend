@@ -28,6 +28,7 @@ export const createProductSchema = Joi.object({
   originalPrice: Joi.number().min(0).allow(null).messages({
     "number.base": "Original price must be a number",
   }),
+  
 
   rating: Joi.number().min(0).max(5).allow(null).messages({
     "number.base": "Rating must be a number",
@@ -55,47 +56,70 @@ export const createProductSchema = Joi.object({
     }),
 
   // ✅ sizes support (important)
+    sizes: Joi.alternatives().try(
+  Joi.array().items(
+    Joi.object({
+      size: Joi.string().required().messages({
+        "string.base": "Size must be a string",
+        "any.required": "Size is required",
+      }),
+      stock: Joi.number().min(0).required().messages({
+        "number.base": "Stock must be a number",
+        "number.min": "Stock cannot be negative",
+        "any.required": "Stock is required",
+      }),
+    })
+  ),
 
+  // 👉 form-data me string aata hai (JSON string)
+  Joi.string()
+).optional().allow(null),
 
 }).min(1); // 🔥 at least 1 field required
 /**
  * Schema for updating an existing product.
  * All fields are optional — only provided fields are validated.
  */
+ 
+
 export const updateProductSchema = Joi.object({
-  name: Joi.string().min(3).max(200).optional().messages({
-    "string.base": "Product name must be a string",
-    "string.min": "Product name must be at least 3 characters",
-    "string.max": "Product name must be less than 200 characters",
-  }),
+  name: Joi.string().min(3).max(200).optional(),
 
-  price: Joi.number().positive().optional().messages({
-    "number.base": "Price must be a valid number",
-    "number.positive": "Price must be greater than 0",
-  }),
+  price: Joi.number().positive().optional(),
 
-  description: Joi.string().max(2000).allow("", null).optional().messages({
-    "string.max": "Description must be less than 2000 characters",
-  }),
+  quantity: Joi.number().min(0).optional(),
+
+  originalPrice: Joi.number().min(0).optional().allow(null),
+
+  rating: Joi.number().min(0).max(5).optional().allow(null),
+
+  productDescription: Joi.string().allow("", null).optional(),
+
+  productDetails: Joi.string().allow("", null).optional(),
 
   category: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
-    .optional()
-    .messages({
-      "string.pattern.base": "Category must be a valid ID",
-    }),
+    .optional(),
 
   subCategory: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
-    .optional()
-    .messages({
-      "string.pattern.base": "SubCategory must be a valid ID",
-    }),
+    .optional(),
 
-  // These come from FormData as JSON strings — Joi validates them as strings
   existingImages: Joi.string().optional().allow("", null),
+
   removedImages: Joi.string().optional().allow("", null),
-});
+
+  sizes: Joi.alternatives().try(
+    Joi.array().items(
+      Joi.object({
+        size: Joi.string().required(),
+        stock: Joi.number().min(0).required(),
+      })
+    ),
+    Joi.string()
+  ).optional().allow(null),
+
+}).min(1).options({ convert: true });
 
 
 // ─── Middleware Factories ──────────────────────────────────────

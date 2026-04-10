@@ -108,29 +108,21 @@ if (sizes && sizes !== "null") {
     parsedSizes = null;
   }
 }
-    // ✅ Parse sizes (important for form-data)
-    // let parsedSizes = [];
-    // if (sizes) {
-    //   parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
-    // }
 
-    // // ✅ Validate sizes
-    // parsedSizes = parsedSizes.map((item) => ({
-    //   size: item.size,
-    //   stock: Number(item.stock) || 0
-    // }));
-
-    // ✅ Image URLs (Cloudinary)
+    //  Image URLs (Cloudinary)
     const imageUrls = req.files?.map(
       (file) => file.path || file.secure_url
     ) || [];
-
+    const toNumber = (value) => {
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+};
     const newProduct = new Product({
       name: name.trim(),
-      price: Number(price),
-      quantity: Number(quantity),
-      originalPrice: Number(originalPrice),
-      rating: Number(rating),
+      price: toNumber(price),
+      quantity: toNumber(quantity),
+      originalPrice: toNumber(originalPrice),
+      rating: toNumber(rating),
       productDetails: productDetails?.trim() || "",
       productDescription: productDescription?.trim() || "",
       category,
@@ -170,10 +162,21 @@ if (sizes && sizes !== "null") {
  *   - removedImages:  JSON array of URLs to remove
  *   - req.files:      newly uploaded images (appended)
  */
+
+
+//  Safe number parser
+
+//  Safe number parser
+const toNumber = (val) => {
+  const num = parseFloat(val);
+  return isNaN(num) ? undefined : num;
+};
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
+    //  Validate ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -182,6 +185,7 @@ export const updateProduct = async (req, res) => {
     }
 
     const product = await Product.findById(id);
+
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -190,46 +194,37 @@ export const updateProduct = async (req, res) => {
     }
 
     const {
-      name, price, description,
-      category, subCategory,
-      existingImages, removedImages,
+      name,
+      price,
+      quantity,
+      originalPrice,
+      rating,
+      productDescription,
+      productDetails,
+      category,
+      subCategory,
+      sizes,
     } = req.body;
 
-    // ─── Image Merge Logic ───────────────────────────────────
-    // 1. Parse what the frontend says should be kept
-    let currentImages = product.img || [];
-    if (existingImages) {
-      try {
-        currentImages =
-          typeof existingImages === "string"
-            ? JSON.parse(existingImages)
-            : existingImages;
-        if (!Array.isArray(currentImages)) currentImages = product.img || [];
-      } catch {
-        currentImages = product.img || [];
-      }
-    }
+    // ─────────────────────────────────────────
+    //  IMAGE LOGIC (FINAL)
+    // ─────────────────────────────────────────
 
-    // 2. Parse images to remove
-    let removedArr = [];
-    if (removedImages) {
-      try {
-        removedArr =
-          typeof removedImages === "string"
-            ? JSON.parse(removedImages)
-            : removedImages;
-        if (!Array.isArray(removedArr)) removedArr = [];
-      } catch {
-        removedArr = [];
-      }
-    }
-
-    // 3. Filter out removed, append new uploads
-    const keptImages = currentImages.filter((img) => !removedArr.includes(img));
     const newUploads = req.files
       ? req.files.map((f) => f.path || f.secure_url).filter(Boolean)
       : [];
-    const finalImages = [...keptImages, ...newUploads];
+
+    let finalImages = [];
+    let isImageUpdated = false;
+
+    if (newUploads.length > 0) {
+      // ✅ replace old images
+      finalImages = newUploads;
+      isImageUpdated = true;
+    } else {
+      // ✅ keep old images
+      finalImages = product.img || [];
+    }
 
     if (finalImages.length === 0) {
       return res.status(400).json({
@@ -238,31 +233,124 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // ─── Build update payload ───────────────────────────────
-    const updateData = { img: finalImages };
-    if (name !== undefined)        updateData.name        = name.trim();
-    if (price !== undefined)       updateData.price       = parseFloat(price);
-    if (description !== undefined) updateData.description = description?.trim() || "";
-    if (category !== undefined)    updateData.category    = category;
-    if (subCategory !== undefined) updateData.subCategory = subCategory;
+    // ─────────────────────────────────────────
+    //  BUILD UPDATE DATA
+    // ─────────────────────────────────────────
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
-      new: true,
+    const updateData = {
+      img: finalImages,
+    };
+
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+
+    if (price !== undefined) {
+      const val = toNumber(price);
+      if (val !== undefined) updateData.price = val;
+    }
+
+    if (quantity !== undefined) {
+      const val = toNumber(quantity);
+      if (val !== undefined) updateData.quantity = val;
+    }
+
+    if (originalPrice !== undefined) {
+      const val = toNumber(originalPrice);
+      if (val !== undefined) updateData.originalPrice = val;
+    }
+
+    if (rating !== undefined) {
+      const val = toNumber(rating);
+      if (val !== undefined) updateData.rating = val;
+    }
+
+    if (productDescription !== undefined) {
+      updateData.productDescription =
+        productDescription?.trim() || "";
+    }
+
+    if (productDetails !== undefined) {
+      updateData.productDetails =
+        productDetails?.trim() || "";
+    }
+
+    if (category !== undefined) {
+      updateData.category = category;
+    }
+
+    if (subCategory !== undefined) {
+      updateData.subCategory = subCategory;
+    }
+
+    // ─────────────────────────────────────────
+    //  SIZES HANDLING
+    // ─────────────────────────────────────────
+
+    if (sizes !== undefined) {
+      let parsedSizes = null;
+
+      if (sizes && sizes !== "null") {
+        try {
+          parsedSizes =
+            typeof sizes === "string"
+              ? JSON.parse(sizes)
+              : sizes;
+
+          parsedSizes = parsedSizes.map((item) => ({
+            size: item.size,
+            stock: Number(item.stock) || 0,
+          }));
+
+          if (parsedSizes.length === 0) {
+            parsedSizes = null;
+          }
+        } catch {
+          parsedSizes = null;
+        }
+      }
+
+      updateData.sizes = parsedSizes;
+    }
+
+    // ─────────────────────────────────────────
+    //  UPDATE OPTIONS (IMPORTANT)
+    // ─────────────────────────────────────────
+
+    const updateOptions = {
+       returnDocument: "after",
       runValidators: true,
-    })
+    };
+
+    //  Agar image update nahi hui → updatedAt change mat karo
+    if (!isImageUpdated) {
+      updateOptions.timestamps = false;
+    }
+
+   
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      updateData,
+      updateOptions
+    )
       .populate("category", "category")
       .populate("subCategory", "name img");
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Product updated successfully",
       data: updatedProduct,
     });
+
   } catch (err) {
     console.error("updateProduct Error:", err);
 
     if (err.name === "ValidationError") {
-      const messages = Object.values(err.errors).map((e) => e.message);
+      const messages = Object.values(err.errors).map(
+        (e) => e.message
+      );
+
       return res.status(400).json({
         success: false,
         message: "Validation Error",
@@ -270,7 +358,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while updating product",
       error: err.message,
