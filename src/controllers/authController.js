@@ -56,14 +56,14 @@ export const signupAdmin = async (req, res) => {
  */
 export const loginAdmin = async (req, res) => {
   try {
-    const { admin_id, password } = req.body;
+    const { username, password } = req.body;
     // Note: admin_id is used here to match the authValidator.js adminloginSchema
-    const username = admin_id; 
+     
 
     if (!username || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username (admin_id) and password are required",
+        message: "Username and password are required",
       });
     }
 

@@ -1,9 +1,31 @@
 import Joi from "joi";
 
+
+export const adminsignupSchema = Joi.object({
+  username: Joi.string().min(3).max(30).required().messages({
+    "string.base": "Username must be a string",
+    "string.empty": "Username is required",
+    "string.min": "Username must be at least 3 characters",
+    "string.max": "Username must be at most 30 characters",
+    "any.required": "Username is required",
+  }),
+  email: Joi.string().email().required().messages({
+    "string.email": "Email must be a valid email address",
+    "string.empty": "Email is required",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string().min(6).max(128).required().messages({
+    "string.empty": "Password is required",
+    "string.min": "Password must be at least 6 characters",
+    "string.max": "Password must be at most 128 characters",
+    "any.required": "Password is required",
+  })
+});
+
 export const adminloginSchema = Joi.object({
-  admin_id: Joi.string().required().messages({
-    'string.empty': 'Admin ID is required',
-    'any.required': 'Admin ID is required',
+  username: Joi.string().required().messages({
+    'string.empty': 'Username is required',
+    'any.required': 'Username is required',
   }),
   password: Joi.string().required().messages({
     'string.empty': 'Password is required',
@@ -11,6 +33,10 @@ export const adminloginSchema = Joi.object({
   }),
 });
 
+/**
+ * Validation schema for User Signup.
+ * Ensures username, email, and password meet the required criteria.
+ */
 export const signupSchema = Joi.object({
   username: Joi.string().min(3).max(30).required().messages({
     "string.base": "Username must be a string",
@@ -30,8 +56,18 @@ export const signupSchema = Joi.object({
     "string.max": "Password must be at most 128 characters",
     "any.required": "Password is required",
   }),
+  phone: Joi.string().pattern(/^[0-9]+$/).min(10).max(15).required().messages({
+    "string.empty": "Phone number is required",
+    "string.pattern.base": "Phone number must contain only digits",
+    "string.min": "Phone number must be at least 10 digits",
+    "any.required": "Phone number is required",
+  }),
 });
 
+/**
+ * Validation schema for User Login.
+ * Validates email and password presence and format.
+ */
 export const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.email": "Email must be a valid email address",

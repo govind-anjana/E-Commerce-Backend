@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 import CategoryModel from "../models/categoryModel.js";
 
 /**
- * GET /api/categories
- * Fetch all categories
+ * @controller Getcategory
+ * @desc Fetch all categories sorted by newest first
+ * @route GET /api/categories
+ * @access Public
  */
 export const Getcategory = async (req, res) => {
   try {
@@ -27,8 +29,10 @@ export const Getcategory = async (req, res) => {
 };
 
 /**
- * GET /api/categories/:id
- * Get a single category by ID
+ * @controller getCategoryById
+ * @desc Get a single category details by its ID
+ * @route GET /api/categories/:id
+ * @access Public
  */
 export const getCategoryById = async (req, res) => {
   try {
@@ -63,9 +67,10 @@ export const getCategoryById = async (req, res) => {
 };
 
 /**
- * POST /api/categories
- * Create a new category.
- * Middleware: verifyAdmin → validateBody(categorySchema)
+ * @controller CategoryAdd
+ * @desc Create a new product category (Admin Only)
+ * @route POST /api/categories
+ * @access Private/Admin
  */
 export const CategoryAdd = async (req, res) => {
   try {
@@ -118,9 +123,10 @@ export const CategoryAdd = async (req, res) => {
 };
 
 /**
- * PUT /api/categories/:id
- * Update a category name.
- * Middleware: verifyAdmin → validateBody(categorySchema)
+ * @controller CategoryUpdate
+ * @desc Update an existing category name by ID (Admin Only)
+ * @route PUT /api/categories/:id
+ * @access Private/Admin
  */
 export const CategoryUpdate = async (req, res) => {
   try {
@@ -184,9 +190,10 @@ export const CategoryUpdate = async (req, res) => {
 };
 
 /**
- * DELETE /api/categories/:id
- * Delete a category by ID.
- * Middleware: verifyAdmin
+ * @controller CategoryDelete
+ * @desc Delete a category by ID (Admin Only)
+ * @route DELETE /api/categories/:id
+ * @access Private/Admin
  */
 export const CategoryDelete = async (req, res) => {
   try {

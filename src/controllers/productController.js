@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 import Product from "../models/productModel.js";
 
 /**
- * GET /api/products
- * Fetch all products with populated category & subCategory
+ * @controller getProducts
+ * @desc Fetch all products with populated category and subcategory details
+ * @route GET /api/products
+ * @access Public
  */
 export const getProducts = async (req, res) => {
   try {
@@ -29,8 +31,10 @@ export const getProducts = async (req, res) => {
 };
 
 /**
- * GET /api/products/:id
- * Get a single product by ID
+ * @controller getProductById
+ * @desc Get details of a single product by its ID
+ * @route GET /api/products/:id
+ * @access Public
  */
 export const getProductById = async (req, res) => {
   try {
@@ -70,10 +74,11 @@ export const getProductById = async (req, res) => {
 };
 
 /**
- * POST /api/products
- * Create a new product.
- * Middleware before this: verifyAdmin → upload → multerErrorHandler → requireImages → validateBody
- * req.files already validated and uploaded to Cloudinary by the time we reach here.
+ * @controller createProduct
+ * @desc Create a new product with multiple image uploads (Admin Only)
+ * @route POST /api/products
+ * @access Private/Admin
+ * @requires multipart/form-data
  */
 export const createProduct = async (req, res) => {
   try {
@@ -154,24 +159,12 @@ if (sizes && sizes !== "null") {
 };
 
 /**
- * PUT /api/products/:id
- * Update a product.
- * Middleware before this: verifyAdmin → upload → multerErrorHandler → validateBody
- * Supports partial updates. Image handling:
- *   - existingImages: JSON array of current image URLs to keep
- *   - removedImages:  JSON array of URLs to remove
- *   - req.files:      newly uploaded images (appended)
+ * @controller updateProduct
+ * @desc Update product details or images by ID (Admin Only)
+ * @route PUT /api/products/:id
+ * @access Private/Admin
+ * @requires multipart/form-data
  */
-
-
-//  Safe number parser
-
-//  Safe number parser
-const toNumber = (val) => {
-  const num = parseFloat(val);
-  return isNaN(num) ? undefined : num;
-};
-
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -367,8 +360,10 @@ export const updateProduct = async (req, res) => {
 };
 
 /**
- * DELETE /api/products/:id
- * Delete a product by ID
+ * @controller deleteProduct
+ * @desc Delete a product by ID (Admin Only)
+ * @route DELETE /api/products/:id
+ * @access Private/Admin
  */
 export const deleteProduct = async (req, res) => {
   try {

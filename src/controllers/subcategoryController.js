@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 import SubCategory from "../models/subcategoryModel.js";
 
 /**
- * GET /api/subcategories
- * Fetch all subcategories with populated category
+ * @controller getSubCategories
+ * @desc Fetch all subcategories with populated parent category details
+ * @route GET /api/subcategories
+ * @access Public
  */
 export const getSubCategories = async (req, res) => {
   try {
@@ -27,8 +29,10 @@ export const getSubCategories = async (req, res) => {
 };
 
 /**
- * GET /api/subcategories/:id
- * Get a single subcategory by ID
+ * @controller getSubCategoryById
+ * @desc Get details of a single subcategory by ID
+ * @route GET /api/subcategories/:id
+ * @access Public
  */
 export const getSubCategoryById = async (req, res) => {
   try {
@@ -60,10 +64,11 @@ export const getSubCategoryById = async (req, res) => {
 };
 
 /**
- * POST /api/subcategories
- * Create a new subcategory.
- * Middleware: verifyAdmin → uploadSubcategoryImage.single() → multerErrorHandler → validateBody
- * req.file already uploaded to Cloudinary by this point.
+ * @controller createSubCategory
+ * @desc Create a new subcategory with image upload (Admin Only)
+ * @route POST /api/subcategories
+ * @access Private/Admin
+ * @requires multipart/form-data
  */
 export const createSubCategory = async (req, res) => {
   try {
@@ -127,9 +132,11 @@ export const createSubCategory = async (req, res) => {
 };
 
 /**
- * PUT /api/subcategories/:id
- * Update a subcategory.
- * Middleware: verifyAdmin → uploadSubcategoryImage.single() → multerErrorHandler → validateBody
+ * @controller updateSubCategory
+ * @desc Update subcategory details or image by ID (Admin Only)
+ * @route PUT /api/subcategories/:id
+ * @access Private/Admin
+ * @requires multipart/form-data
  */
 export const updateSubCategory = async (req, res) => {
   try {
@@ -183,8 +190,10 @@ export const updateSubCategory = async (req, res) => {
 };
 
 /**
- * DELETE /api/subcategories/:id
- * Delete a subcategory by ID
+ * @controller deleteSubCategory
+ * @desc Delete a subcategory by ID (Admin Only)
+ * @route DELETE /api/subcategories/:id
+ * @access Private/Admin
  */
 export const deleteSubCategory = async (req, res) => {
   try {
