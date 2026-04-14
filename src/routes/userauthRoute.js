@@ -6,7 +6,7 @@ import { loginLimiter, otpLimiter, signupLimiter } from '../middlewares/rateLimi
 const router = express.Router();
 
 /**
- * @route   POST /api/user/register
+ * @route   POST /api/user/signup
  * @desc    Signup a new user (OTP will be sent)
  * @access  Public
  */

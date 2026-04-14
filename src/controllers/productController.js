@@ -2,6 +2,8 @@
 import mongoose from "mongoose";
 import Product from "../models/productModel.js";
 
+
+
 /**
  * @controller getProducts
  * @desc Fetch all products with populated category and subcategory details
@@ -118,10 +120,6 @@ if (sizes && sizes !== "null") {
     const imageUrls = req.files?.map(
       (file) => file.path || file.secure_url
     ) || [];
-    const toNumber = (value) => {
-  const num = Number(value);
-  return isNaN(num) ? null : num;
-};
     const newProduct = new Product({
       name: name.trim(),
       price: toNumber(price),
@@ -165,6 +163,14 @@ if (sizes && sizes !== "null") {
  * @access Private/Admin
  * @requires multipart/form-data
  */
+
+// ✅ Helper function (FIX for toNumber error)
+const toNumber = (value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  return isNaN(num) ? undefined : num;
+};
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -200,7 +206,7 @@ export const updateProduct = async (req, res) => {
     } = req.body;
 
     // ─────────────────────────────────────────
-    //  IMAGE LOGIC (FINAL)
+    // 🖼️ IMAGE LOGIC
     // ─────────────────────────────────────────
 
     const newUploads = req.files
@@ -211,11 +217,9 @@ export const updateProduct = async (req, res) => {
     let isImageUpdated = false;
 
     if (newUploads.length > 0) {
-      // ✅ replace old images
       finalImages = newUploads;
       isImageUpdated = true;
     } else {
-      // ✅ keep old images
       finalImages = product.img || [];
     }
 
@@ -259,13 +263,11 @@ export const updateProduct = async (req, res) => {
     }
 
     if (productDescription !== undefined) {
-      updateData.productDescription =
-        productDescription?.trim() || "";
+      updateData.productDescription = productDescription?.trim() || "";
     }
 
     if (productDetails !== undefined) {
-      updateData.productDetails =
-        productDetails?.trim() || "";
+      updateData.productDetails = productDetails?.trim() || "";
     }
 
     if (category !== undefined) {
@@ -298,7 +300,8 @@ export const updateProduct = async (req, res) => {
           if (parsedSizes.length === 0) {
             parsedSizes = null;
           }
-        } catch {
+        } catch (err) {
+          console.log("Sizes parse error:", err);
           parsedSizes = null;
         }
       }
@@ -307,20 +310,22 @@ export const updateProduct = async (req, res) => {
     }
 
     // ─────────────────────────────────────────
-    //  UPDATE OPTIONS (IMPORTANT)
+    //  UPDATE OPTIONS
     // ─────────────────────────────────────────
 
     const updateOptions = {
-       returnDocument: "after",
+      returnDocument: "after", //  return updated doc (important)
       runValidators: true,
     };
 
-    //  Agar image update nahi hui → updatedAt change mat karo
+    // Agar image update nahi hui → updatedAt change mat karo
     if (!isImageUpdated) {
       updateOptions.timestamps = false;
     }
 
-   
+    // ─────────────────────────────────────────
+    //  UPDATE PRODUCT
+    // ─────────────────────────────────────────
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
