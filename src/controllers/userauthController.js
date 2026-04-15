@@ -3,6 +3,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userauthModel.js";
 
+export const allUsers=async(req,res)=>{
+    try {
+    const data = await User.find();
+    if (!data.length) return res.status(404).json({ message: "No users found" });
+    res.status(200).json({ message: "All users fetch successfully", data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 /**
  * Initiates User Signup by sending OTPs to email and phone.
  * Data is stored in a temporary in-memory store until verified.
@@ -142,4 +152,4 @@ export const userLogin = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
-};
+};

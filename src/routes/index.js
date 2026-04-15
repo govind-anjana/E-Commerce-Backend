@@ -7,7 +7,7 @@ import productRoutes from './productRoute.js';
 import authRoutes from './authRoute.js';
 import bannerRoutes from './bannerRoute.js';
 
-router.use('/auth', authRoutes);
+router.use('/admin', authRoutes);
 
 router.use('/userauth', userauthRoutes);
 

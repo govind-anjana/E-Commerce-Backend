@@ -1,10 +1,13 @@
 import express from 'express';
-import { signup, verifyOtp, userLogin } from '../controllers/userauthController.js';
+import { signup, verifyOtp, userLogin, allUsers } from '../controllers/userauthController.js';
 import { signupSchema, loginSchema, validateBody } from '../validators/authValidator.js';
 import { loginLimiter, otpLimiter, signupLimiter } from '../middlewares/rateLimiter.js';
+import { verifyAdmin } from '../middlewares/authVerify.js';
 
 const router = express.Router();
 
+
+router.get("/",verifyAdmin,allUsers);
 /**
  * @route   POST /api/user/signup
  * @desc    Signup a new user (OTP will be sent)
