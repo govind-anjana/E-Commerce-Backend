@@ -6,8 +6,13 @@ import subcategoryRoutes from './subcategoryRoute.js';
 import productRoutes from './productRoute.js';
 import authRoutes from './authRoute.js';
 import bannerRoutes from './bannerRoute.js';
+import dashboardRoutes from './dashboard.js'
+import contactRoutes from './contactRoute.js';
+
 
 router.use('/admin', authRoutes);
+
+router.use('/admin-dashboard', dashboardRoutes);
 
 router.use('/userauth', userauthRoutes);
 
@@ -18,5 +23,7 @@ router.use('/subcategories', subcategoryRoutes);
 router.use('/products', productRoutes);
 
 router.use('/banners', bannerRoutes);
+
+router.use('/contacts', contactRoutes);
 
 export default router

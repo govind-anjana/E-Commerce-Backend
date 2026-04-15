@@ -20,6 +20,9 @@ export const allUsers=async(req,res)=>{
 export const signup = async (req, res) => {
   try {
     const { username, email, phone, password } = req.body;
+    if(!username || !email || !phone || !password){
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -63,8 +66,10 @@ export const signup = async (req, res) => {
  */
 export const verifyOtp = async (req, res) => {
   try {
-    const { email, phone, emailOtp, phoneOtp } = req.body;
-
+    const { email, emailOtp, phoneOtp } = req.body;
+    if(!email || !emailOtp || !phoneOtp){
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
     const record = otpStore.get(email);
 
     if (!record) {
@@ -118,6 +123,9 @@ export const verifyOtp = async (req, res) => {
 export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if(!email || !password){
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
     // 1. Find user
     const user = await User.findOne({ email });
