@@ -403,3 +403,93 @@ export const deleteProduct = async (req, res) => {
     });
   }
 };
+
+
+export const getProductsBySubCategory = async (req, res) => {
+  try {
+    const { subCategory } = req.query;
+
+    if (!subCategory) {
+      return res.status(400).json({
+        success: false,
+        message: "SubCategory is required",
+      });
+    }
+
+    const products = await Product.find({
+      subCategory: subCategory,
+    })
+      .populate("category", "category")
+      .populate("subCategory", "name img");
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching products",
+    });
+  }
+};
+export const getFilteredProducts = async (req, res) => {
+  try {
+    const { category, subCategory } = req.query;
+
+    let filter = {};
+
+    //  Agar category diya hai
+    if (category) {
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category ID",
+        });
+      }
+      filter.category = category;
+    }
+
+    //   Agar subCategory diya hai
+    if (subCategory) {
+      if (!mongoose.Types.ObjectId.isValid(subCategory)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid subCategory ID",
+        });
+      }
+      filter.subCategory = subCategory;
+    }
+
+    //  Optional: agar dono nahi aaye to error
+    if (!category && !subCategory) {
+      return res.status(400).json({
+        success: false,
+        message: "At least category or subCategory is required",
+      });
+    }
+
+    //  DB Query
+    const products = await Product.find(filter)
+      .populate("category", "category")
+      .populate("subCategory", "name img")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+
+  } catch (err) {
+    console.error("getFilteredProducts Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching products",
+      error: err.message,
+    });
+  }
+};

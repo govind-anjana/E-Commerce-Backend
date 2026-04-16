@@ -8,7 +8,8 @@ import authRoutes from './authRoute.js';
 import bannerRoutes from './bannerRoute.js';
 import dashboardRoutes from './dashboard.js'
 import contactRoutes from './contactRoute.js';
-
+import sectionProductRoutes from './sectionProductRoute.js';
+import sectionRoutes from './sectionRoute.js';
 
 router.use('/admin', authRoutes);
 
@@ -25,5 +26,9 @@ router.use('/products', productRoutes);
 router.use('/banners', bannerRoutes);
 
 router.use('/contacts', contactRoutes);
+
+router.use('/sections', sectionRoutes);
+
+router.use('/section-products', sectionProductRoutes);
 
 export default router

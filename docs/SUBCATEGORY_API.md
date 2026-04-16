@@ -1,6 +1,6 @@
 # Subcategory API Documentation
 
-Manage product subcategories. Subcategories are linked to a parent Category.
+This document describes the endpoints for managing subcategories. Subcategories are linked to a parent Category.
 
 ## Base URL
 `/api/subcategories`
@@ -8,10 +8,11 @@ Manage product subcategories. Subcategories are linked to a parent Category.
 ## Endpoints
 
 ### 1. Get All Subcategories
-Retrieve a list of all subcategories, including their parent category details.
+Fetches all subcategories with populated parent category details.
 
-- **URL:** `/`
+- **URL:** `/api/subcategories`
 - **Method:** `GET`
+- **Auth required:** No
 - **Access:** Public
 
 **Response (200 OK):**
@@ -19,16 +20,16 @@ Retrieve a list of all subcategories, including their parent category details.
 {
   "success": true,
   "message": "Subcategories retrieved successfully",
-  "count": 1,
+  "count": 2,
   "data": [
     {
-      "_id": "60d...s1",
-      "name": "Laptops",
+      "_id": "60d0fe4f5311236168a109ca",
+      "name": "Smartphones",
       "category": {
-        "_id": "60d...c1",
+        "_id": "60d0fe4f5311236168a109cb",
         "category": "Electronics"
       },
-      "img": "https://cloudinary.com/..."
+      "img": "https://res.cloudinary.com/..."
     }
   ]
 }
@@ -37,11 +38,14 @@ Retrieve a list of all subcategories, including their parent category details.
 ---
 
 ### 2. Get Subcategory By ID
-Retrieve a single subcategory by its ID.
+Fetches details of a single subcategory by its ID.
 
-- **URL:** `/:id`
+- **URL:** `/api/subcategories/:id`
 - **Method:** `GET`
+- **Auth required:** No
 - **Access:** Public
+- **URL Params:**
+    - `id` (string, required): MongoDB ObjectId of the subcategory
 
 **Response (200 OK):**
 ```json
@@ -49,27 +53,39 @@ Retrieve a single subcategory by its ID.
   "success": true,
   "message": "Subcategory found",
   "data": {
-    "_id": "60d...s1",
-    "name": "Laptops",
-    "category": { ... },
-    "img": "..."
+    "_id": "60d0fe4f5311236168a109ca",
+    "name": "Smartphones",
+    "category": {
+      "_id": "60d0fe4f5311236168a109cb",
+      "category": "Electronics"
+    },
+    "img": "https://res.cloudinary.com/..."
   }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "success": false,
+  "message": "Subcategory not found"
 }
 ```
 
 ---
 
-### 3. Add Subcategory
-Create a new subcategory with an image.
+### 3. Create Subcategory
+Creates a new subcategory with an image upload. 
 
-- **URL:** `/`
+- **URL:** `/api/subcategories`
 - **Method:** `POST`
-- **Access:** Admin (JWT required)
+- **Auth required:** Yes (JWT)
+- **Access:** Admin (requires `verifyAdmin` middleware)
 - **Content-Type:** `multipart/form-data`
 - **Body Params:**
-    - `name` (string, required): Name of the subcategory.
-    - `category` (string, required): MongoDB ID of the parent Category.
-    - `img` (file, required): Image file (uploaded to Cloudinary).
+    - `name` (string, required): Name of the subcategory
+    - `category` (string, required): MongoDB ObjectId of the parent category
+    - `img` (file, required): Image file for the subcategory
 
 **Response (201 Created):**
 ```json
@@ -77,45 +93,78 @@ Create a new subcategory with an image.
   "success": true,
   "message": "Subcategory created successfully",
   "data": {
-    "_id": "60d...",
-    "name": "Mice",
-    "category": { ... },
-    "img": "https://cloudinary.com/..."
+    "_id": "60d0fe4f5311236168a109cd",
+    "name": "Laptops",
+    "category": {
+      "_id": "60d0fe4f5311236168a109cc",
+      "category": "Electronics"
+    },
+    "img": "https://res.cloudinary.com/..."
   }
+}
+```
+
+**Response (400 Bad Request - Image missing):**
+```json
+{
+  "success": false,
+  "message": "Subcategory image is required"
+}
+```
+
+**Response (400 Bad Request - Duplicate name):**
+```json
+{
+  "success": false,
+  "message": "Subcategory with this name already exists in the selected category"
 }
 ```
 
 ---
 
 ### 4. Update Subcategory
-Update subcategory details or image.
+Updates subcategory details or image by ID.
 
-- **URL:** `/:id`
+- **URL:** `/api/subcategories/:id`
 - **Method:** `PUT`
-- **Access:** Admin (JWT required)
+- **Auth required:** Yes (JWT)
+- **Access:** Admin (requires `verifyAdmin` middleware)
 - **Content-Type:** `multipart/form-data`
-- **Body Params (All Optional):**
-    - `name` (string)
-    - `category` (string: Category ID)
-    - `img` (file: New image file)
+- **URL Params:**
+    - `id` (string, required): MongoDB ObjectId of the subcategory
+- **Body Params (all optional):**
+    - `name` (string, optional)
+    - `category` (string, optional)
+    - `img` (file, optional): New image file to replace the existing one
 
 **Response (200 OK):**
 ```json
 {
   "success": true,
   "message": "Subcategory updated successfully",
-  "data": { ... }
+  "data": {
+    "_id": "60d0fe4f5311236168a109cd",
+    "name": "Gaming Laptops",
+    "category": {
+      "_id": "60d0fe4f5311236168a109cc",
+      "category": "Electronics"
+    },
+    "img": "https://res.cloudinary.com/..."
+  }
 }
 ```
 
 ---
 
 ### 5. Delete Subcategory
-Remove a subcategory by its ID.
+Deletes a subcategory by ID.
 
-- **URL:** `/:id`
+- **URL:** `/api/subcategories/:id`
 - **Method:** `DELETE`
-- **Access:** Admin (JWT required)
+- **Auth required:** Yes (JWT)
+- **Access:** Admin (requires `verifyAdmin` middleware)
+- **URL Params:**
+    - `id` (string, required): MongoDB ObjectId of the subcategory
 
 **Response (200 OK):**
 ```json
@@ -124,3 +173,10 @@ Remove a subcategory by its ID.
   "message": "Subcategory deleted successfully"
 }
 ```
+
+---
+
+## Technical Details & Validation
+- **Image Uploads**: Handled via `multer` to `Cloudinary`. Middleware catches size and format errors before reaching the controller.
+- **Validation**: Performed via Joi schemas (`createSubCategorySchema`, `updateSubCategorySchema`) hooked through the `validateBody` middleware.
+- **Populate**: Response payloads populate the `category` field mapping it to its parent category content.

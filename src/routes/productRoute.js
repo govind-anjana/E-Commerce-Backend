@@ -6,6 +6,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductsBySubCategory,
+  getFilteredProducts,
 } from "../controllers/productController.js";
 import { uploadProductImages } from "../middlewares/upload.js";
 import { verifyAdmin } from "../middlewares/authVerify.js";
@@ -23,9 +25,7 @@ const router = express.Router();
 
 /** GET /api/products - All products */
 router.get("/", getProducts);
-
-/** GET /api/products/:id - Single product */
-router.get("/:id", getProductById);
+ 
 
 // ─── Admin Protected Routes ───────────────────────────────────
 
@@ -71,5 +71,14 @@ router.put(
  * 2. deleteProduct → controller
  */
 router.delete("/:id", verifyAdmin, deleteProduct);
+
+
+router.get("/subcategory", getProductsBySubCategory);
+
+//  Category + SubCategory filter
+router.get("/products/filter", getFilteredProducts);
+
+/** GET /api/products/:id - Single product */
+router.get("/:id", getProductById);
 
 export default router;
