@@ -12,14 +12,25 @@ import Product from "../models/productModel.js";
  */
 export const getProducts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments();
     const products = await Product.find()
       .populate("category", "category")
-      .populate("subCategory", "name img");
+      .populate("subCategory", "name img")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       message: "Products retrieved successfully",
       count: products.length,
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: page,
       data: products,
     });
   } catch (err) {
