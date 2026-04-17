@@ -128,9 +128,20 @@ export const PromoCreate = async (req, res) => {
 ========================= */
 export const applyPromo = async (req, res) => {
   try {
-    const { code, productId, subCategoryId, userEmail } = req.body;
+    const { code, productId, subCategoryId, userEmail, totalAmount } = req.body;
 
-    const promo = await PromoCodeModel.findOne({ code: code.toUpperCase() });
+    if (!code) {
+      return res.status(400).json({ message: "Promo code required" });
+    }
+
+    if (!totalAmount || totalAmount <= 0) {
+      return res.status(400).json({ message: "Valid total amount required" });
+    }
+
+    // Normalize code
+    const promo = await PromoCodeModel.findOne({
+      code: code.trim().toUpperCase(),
+    });
 
     if (!promo || !promo.isActive) {
       return res.status(400).json({ message: "Invalid promo code" });
@@ -146,37 +157,53 @@ export const applyPromo = async (req, res) => {
       return res.status(400).json({ message: "Usage limit reached" });
     }
 
-    // Already used by user
+    // Already used
     if (promo.usedBy.includes(userEmail)) {
       return res.status(400).json({ message: "You already used this promo" });
     }
 
-    // ✅ Product match
+    // Product match
     if (promo.applicableProduct) {
       if (promo.applicableProduct.toString() !== productId) {
         return res.status(400).json({ message: "Promo not valid for this product" });
       }
     }
 
-    // ✅ SubCategory match
+    // SubCategory match
     if (promo.applicableSubCategory) {
       if (promo.applicableSubCategory.toString() !== subCategoryId) {
         return res.status(400).json({ message: "Promo not valid for this subcategory" });
       }
     }
 
-    // Apply success
+    // ==========================
+    // 🔥 FLAT DISCOUNT LOGIC
+    // ==========================
+
+    let discount = Number(promo.discountValue) || 0;
+
+    // Safety: discount > totalAmount na ho
+    if (discount > totalAmount) {
+      discount = totalAmount;
+    }
+
+    const finalAmount = totalAmount - discount;
+
+    // Save usage
     promo.usedCount += 1;
     promo.usedBy.push(userEmail);
     await promo.save();
 
     return res.json({
       success: true,
-      discount: promo.discountValue,
-      message: "Promo applied successfully",
+      message: `₹${discount} OFF applied`,
+      originalAmount: totalAmount,
+      discount,
+      finalAmount,
     });
 
   } catch (error) {
+    console.error("Apply Promo Error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
