@@ -13,23 +13,30 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://unboxin-ecommerce.vercel.app", // Production frontend (hardcoded fallback)
-  process.env.CLIENT_URL,                 // Production frontend URL from .env
-].filter(Boolean); // Remove undefined/empty entries
+  "https://unboxin-ecommerce.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean).map(o => o.replace(/\/$/, "")); // Normalize to no-trailing-slash
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (Postman, mobile apps, curl)
+    // 1. Allow no-origin (Postman, etc.)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    // 2. Normalize incoming origin for comparison
+    const normalizedOrigin = origin.replace(/\/$/, "");
+    
+    if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
-    callback(new Error(`CORS: Origin '${origin}' not allowed`));
+
+    // 3. Log mismatched origin for debugging (check Render logs)
+    console.log(`CORS blocked for: ${origin}`);
+    callback(null, false); 
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
