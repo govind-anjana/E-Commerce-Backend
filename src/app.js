@@ -30,18 +30,18 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // ✅ CHANGE HERE
-    return callback(new Error(`CORS: Origin ${origin} not allowed`));
+    // Returning false instead of an Error is the standard 'cors' way.
+    // This allows the browser to see a proper CORS rejection header 
+    // instead of a generic 403 'Network Error'.
+    return callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
-
-// Handle preflight (OPTIONS) requests for all routes
-app.options("*", cors(corsOptions));
 
 
 // ─── Body Parsers ─────────────────────────────────────────────

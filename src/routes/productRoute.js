@@ -25,7 +25,15 @@ const router = express.Router();
 
 /** GET /api/products - All products */
 router.get("/", getProducts);
- 
+
+/** GET /api/products/subcategory - Products by subcategory */
+router.get("/subcategory", getProductsBySubCategory);
+
+/** GET /api/products/filter - Filtered products */
+router.get("/filter", getFilteredProducts);
+
+/** GET /api/products/:id - Single product */
+router.get("/:id", getProductById);
 
 // ─── Admin Protected Routes ───────────────────────────────────
 
@@ -72,13 +80,5 @@ router.put(
  */
 router.delete("/:id", verifyAdmin, deleteProduct);
 
-
-router.get("/subcategory", getProductsBySubCategory);
-
-//  Category + SubCategory filter
-router.get("/products/filter", getFilteredProducts);
-
-/** GET /api/products/:id - Single product */
-router.get("/:id", getProductById);
 
 export default router;
