@@ -13,25 +13,29 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
-  process.env.CLIENT_URL, // Production frontend URL from .env
-].filter(Boolean); // Remove undefined entries
+  "https://unboxin-ecommerce.vercel.app", // Production frontend (hardcoded fallback)
+  process.env.CLIENT_URL,                 // Production frontend URL from .env
+].filter(Boolean); // Remove undefined/empty entries
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (Postman, mobile apps, curl)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (Postman, mobile apps, curl)
+    if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      callback(new Error(`CORS: Origin '${origin}' not allowed`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: Origin '${origin}' not allowed`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight (OPTIONS) requests for all routes
+app.options("*", cors(corsOptions));
 
 
 // ─── Body Parsers ─────────────────────────────────────────────
