@@ -11,6 +11,7 @@ import contactRoutes from './contactRoute.js';
 import sectionProductRoutes from './sectionProductRoute.js';
 import sectionRoutes from './sectionRoute.js';
 import promoRoutes from './promoRoute.js';
+import orderRoutes from './orderRoute.js';
 router.use('/admin', authRoutes);
 
 router.use('/admin-dashboard', dashboardRoutes);
@@ -32,5 +33,6 @@ router.use('/sections', sectionRoutes);
 router.use('/section-products', sectionProductRoutes);
 
 router.use("/promos", promoRoutes);
+router.use("/orders", orderRoutes);
 
 export default router

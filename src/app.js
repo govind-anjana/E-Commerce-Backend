@@ -19,24 +19,23 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // 1. Allow no-origin (Postman, etc.)
     if (!origin) return callback(null, true);
 
-    // 2. Normalize incoming origin for comparison
     const normalizedOrigin = origin.replace(/\/$/, "");
-    
+
+    console.log("Incoming Origin:", normalizedOrigin);
+    console.log("Allowed Origins:", allowedOrigins);
+
     if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
 
-    // 3. Log mismatched origin for debugging (check Render logs)
-    console.log(`CORS blocked for: ${origin}`);
-    callback(null, false); 
+    // ✅ CHANGE HERE
+    return callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));

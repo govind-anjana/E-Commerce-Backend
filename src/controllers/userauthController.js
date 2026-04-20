@@ -161,3 +161,35 @@ export const userLogin = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
+export const GetUserById = async (req, res) => {
+  try {
+    const { id } = req.params; // URL se user id lo
+
+    // Step 1: Find user by ID
+    const user = await User.findById(id).select("-password"); // password field hide kar diya
+
+    // Step 2: If user not found
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Step 3: Send user data
+    res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Get User Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
