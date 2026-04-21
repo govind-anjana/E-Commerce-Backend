@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
   email:    { type: String, required: true, unique: true },
   password: { type: String, required: true }, // Stored as Bcrypt Hash
   phone:    { type: String, default: "" },
+  dateOfBirth:{
+    type: Date,           // <-- important: store DOB as Date
+    required: false       // make true if you want to make it mandatory
+  },
+  address:  { type: String, default: "" },
   isVerified: { type: Boolean, default: false },            
   otpExpiresAt: { type: Date },  
   verificationToken: { type: String },
