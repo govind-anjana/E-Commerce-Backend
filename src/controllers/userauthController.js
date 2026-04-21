@@ -193,3 +193,53 @@ export const GetUserById = async (req, res) => {
     });
   }
 };
+
+export const UpdateProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || id === "null" || id === "undefined") {
+      return res.status(400).json({ success: false, message: "Valid user ID required" });
+    }
+
+    const { username, email, phone, address, dateOfBirth } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Update fields
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+
+    // ⭐ VERY IMPORTANT: DOB update fix
+    if (dateOfBirth) {
+      const formattedDOB = new Date(dateOfBirth);
+
+      if (isNaN(formattedDOB.getTime())) {
+        return res.status(400).json({ success: false, message: "Invalid date format" });
+      }
+
+      user.dateOfBirth = formattedDOB;
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};

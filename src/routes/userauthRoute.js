@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, verifyOtp, userLogin, allUsers, GetUserById } from '../controllers/userauthController.js';
+import { signup, verifyOtp, userLogin, allUsers, GetUserById, UpdateProfile } from '../controllers/userauthController.js';
 import { signupSchema, loginSchema, validateBody } from '../validators/authValidator.js';
 import { loginLimiter, otpLimiter, signupLimiter } from '../middlewares/rateLimiter.js';
 import { verifyAdmin } from '../middlewares/authVerify.js';
@@ -27,8 +27,11 @@ router.post('/verify-otp', otpLimiter, verifyOtp);
  * @desc    Login user and get token
  * @access  Public
  */
-router.post("/login", loginLimiter, validateBody(loginSchema), userLogin);
+// router.post("/login", loginLimiter, validateBody(loginSchema), userLogin);
+router.post("/login", validateBody(loginSchema), userLogin);
 
 router.get("/profile/:id", GetUserById);
+
+router.put("/update-profile/:id", UpdateProfile);
 
 export default router;
