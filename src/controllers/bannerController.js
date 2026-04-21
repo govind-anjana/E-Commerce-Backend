@@ -2,7 +2,6 @@
 import mongoose from "mongoose";
 import BannerModel from "../models/bannerModel.js";
 import ProductModel from "../models/productModel.js";
-// import cloudinary from "../config/cloudinary.js"; // optional
 
 /**
  * @controller BannerAdd
@@ -21,7 +20,20 @@ export const BannerAdd = async (req, res) => {
         message: "Image file is required",
       });
     }
+       if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
 
+    // Invalid ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID format",
+      });
+    }
     const imageUrl = req.file.path || req.file.secure_url;
 
     //  convert isActive
