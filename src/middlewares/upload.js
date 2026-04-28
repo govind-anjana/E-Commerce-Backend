@@ -38,7 +38,7 @@ const subcategoryStorage = new CloudinaryStorage({
 /** For product images (multiple files, field name: "img") */
 export const uploadProductImages = multer({
   storage: productStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
   fileFilter: imageFileFilter,
 });
 

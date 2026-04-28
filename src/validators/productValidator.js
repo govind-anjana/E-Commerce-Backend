@@ -75,7 +75,9 @@ export const createProductSchema = Joi.object({
   Joi.string()
 ).optional().allow(null),
 
-}).min(1); // 🔥 at least 1 field required
+  img: Joi.any().optional(),
+  images: Joi.any().optional(),
+}).min(1).unknown(true);
 /**
  * Schema for updating an existing product.
  * All fields are optional — only provided fields are validated.
@@ -119,7 +121,9 @@ export const updateProductSchema = Joi.object({
     Joi.string()
   ).optional().allow(null),
 
-}).min(1).options({ convert: true });
+  img: Joi.any().optional(),
+  images: Joi.any().optional(),
+}).min(1).unknown(true).options({ convert: true, allowUnknown: true });
 
 
 // ─── Middleware Factories ──────────────────────────────────────
@@ -129,8 +133,13 @@ export const updateProductSchema = Joi.object({
  * Returns 400 with all validation errors if validation fails.
  */
 export const validateBody = (schema) => (req, res, next) => {
+  console.log("--- ValidateBody ---");
+  console.log("Body:", req.body);
+  console.log("Files:", req.files ? `Count: ${req.files.length}` : "No files");
+  
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
+    console.log("Validation Error Details:", error.details.map(d => d.message));
     return res.status(400).json({
       success: false,
       message: "Validation failed",
