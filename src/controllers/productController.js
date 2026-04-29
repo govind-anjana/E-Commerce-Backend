@@ -110,22 +110,22 @@ export const createProduct = async (req, res) => {
 
     let parsedSizes = null;
 
-if (sizes && sizes !== "null") {
-  parsedSizes = typeof sizes === "string"
-    ? JSON.parse(sizes)
-    : sizes;
+    if (sizes && sizes !== "null") {
+      parsedSizes = typeof sizes === "string"
+        ? JSON.parse(sizes)
+        : sizes;
 
-  // validate
-  parsedSizes = parsedSizes.map((item) => ({
-    size: item.size,
-    stock: Number(item.stock) || 0
-  }));
+      // validate
+      parsedSizes = parsedSizes.map((item) => ({
+        size: item.size,
+        stock: Number(item.stock) || 0
+      }));
 
-  // agar empty array aaya to bhi null kar do
-  if (parsedSizes.length === 0) {
-    parsedSizes = null;
-  }
-}
+      // agar empty array aaya to bhi null kar do
+      if (parsedSizes.length === 0) {
+        parsedSizes = null;
+      }
+    }
 
     //  Image URLs (Cloudinary)
     const imageUrls = req.files?.map(
@@ -141,7 +141,7 @@ if (sizes && sizes !== "null") {
       productDescription: productDescription?.trim() || "",
       category,
       subCategory,
-      sizes: parsedSizes, 
+      sizes: parsedSizes,
       img: imageUrls
     });
 
@@ -182,11 +182,11 @@ const toNumber = (value) => {
   return isNaN(num) ? undefined : num;
 };
 
-export const updateProduct = async (req, res) => {
+ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    //  Validate ID
+    // Validate ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -228,9 +228,28 @@ export const updateProduct = async (req, res) => {
     let isImageUpdated = false;
 
     if (newUploads.length > 0) {
+      // FIX #1: Delete old Cloudinary images before replacing
+      if (product.img?.length) {
+        await Promise.all(
+          product.img.map((url) => {
+            // Extract public_id from Cloudinary URL
+            // e.g. https://res.cloudinary.com/demo/image/upload/v123/folder/myimage.jpg
+            // → public_id = "folder/myimage"
+            const parts = url.split("/");
+            const uploadIndex = parts.indexOf("upload");
+            const publicIdWithExt = parts
+              .slice(uploadIndex + 2) // skip "upload" and version segment
+              .join("/");
+            const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ""); // remove extension
+            return cloudinary.uploader.destroy(publicId);
+          })
+        );
+      }
+
       finalImages = newUploads;
       isImageUpdated = true;
     } else {
+      // No new files sent → keep existing images untouched
       finalImages = product.img || [];
     }
 
@@ -242,7 +261,7 @@ export const updateProduct = async (req, res) => {
     }
 
     // ─────────────────────────────────────────
-    //  BUILD UPDATE DATA
+    // BUILD UPDATE DATA
     // ─────────────────────────────────────────
 
     const updateData = {
@@ -290,7 +309,7 @@ export const updateProduct = async (req, res) => {
     }
 
     // ─────────────────────────────────────────
-    //  SIZES HANDLING
+    // SIZES HANDLING
     // ─────────────────────────────────────────
 
     if (sizes !== undefined) {
@@ -299,9 +318,7 @@ export const updateProduct = async (req, res) => {
       if (sizes && sizes !== "null") {
         try {
           parsedSizes =
-            typeof sizes === "string"
-              ? JSON.parse(sizes)
-              : sizes;
+            typeof sizes === "string" ? JSON.parse(sizes) : sizes;
 
           parsedSizes = parsedSizes.map((item) => ({
             size: item.size,
@@ -321,21 +338,17 @@ export const updateProduct = async (req, res) => {
     }
 
     // ─────────────────────────────────────────
-    //  UPDATE OPTIONS
+    // UPDATE OPTIONS
     // ─────────────────────────────────────────
 
     const updateOptions = {
-      returnDocument: "after", //  return updated doc (important)
+      new: true,            // FIX #3: Correct Mongoose option (not returnDocument: "after")
       runValidators: true,
+      // FIX #2: Removed timestamps:false — not supported in findByIdAndUpdate, does nothing
     };
 
-    // Agar image update nahi hui → updatedAt change mat karo
-    if (!isImageUpdated) {
-      updateOptions.timestamps = false;
-    }
-
     // ─────────────────────────────────────────
-    //  UPDATE PRODUCT
+    // UPDATE PRODUCT
     // ─────────────────────────────────────────
 
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -356,9 +369,7 @@ export const updateProduct = async (req, res) => {
     console.error("updateProduct Error:", err);
 
     if (err.name === "ValidationError") {
-      const messages = Object.values(err.errors).map(
-        (e) => e.message
-      );
+      const messages = Object.values(err.errors).map((e) => e.message);
 
       return res.status(400).json({
         success: false,
@@ -374,7 +385,6 @@ export const updateProduct = async (req, res) => {
     });
   }
 };
-
 /**
  * @controller deleteProduct
  * @desc Delete a product by ID (Admin Only)

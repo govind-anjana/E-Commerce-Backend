@@ -28,7 +28,7 @@ export const createProductSchema = Joi.object({
   originalPrice: Joi.number().min(0).allow(null).messages({
     "number.base": "Original price must be a number",
   }),
-  
+
 
   rating: Joi.number().min(0).max(5).allow(null).messages({
     "number.base": "Rating must be a number",
@@ -56,24 +56,24 @@ export const createProductSchema = Joi.object({
     }),
 
   // ✅ sizes support (important)
-    sizes: Joi.alternatives().try(
-  Joi.array().items(
-    Joi.object({
-      size: Joi.string().required().messages({
-        "string.base": "Size must be a string",
-        "any.required": "Size is required",
-      }),
-      stock: Joi.number().min(0).required().messages({
-        "number.base": "Stock must be a number",
-        "number.min": "Stock cannot be negative",
-        "any.required": "Stock is required",
-      }),
-    })
-  ),
+  sizes: Joi.alternatives().try(
+    Joi.array().items(
+      Joi.object({
+        size: Joi.string().required().messages({
+          "string.base": "Size must be a string",
+          "any.required": "Size is required",
+        }),
+        stock: Joi.number().min(0).required().messages({
+          "number.base": "Stock must be a number",
+          "number.min": "Stock cannot be negative",
+          "any.required": "Stock is required",
+        }),
+      })
+    ),
 
-  // 👉 form-data me string aata hai (JSON string)
-  Joi.string()
-).optional().allow(null),
+    // 👉 form-data me string aata hai (JSON string)
+    Joi.string()
+  ).optional().allow(null),
 
   img: Joi.any().optional(),
   images: Joi.any().optional(),
@@ -82,7 +82,7 @@ export const createProductSchema = Joi.object({
  * Schema for updating an existing product.
  * All fields are optional — only provided fields are validated.
  */
- 
+
 
 export const updateProductSchema = Joi.object({
   name: Joi.string().min(3).max(200).optional(),
@@ -136,7 +136,7 @@ export const validateBody = (schema) => (req, res, next) => {
   console.log("--- ValidateBody ---");
   console.log("Body:", req.body);
   console.log("Files:", req.files ? `Count: ${req.files.length}` : "No files");
-  
+
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     console.log("Validation Error Details:", error.details.map(d => d.message));
