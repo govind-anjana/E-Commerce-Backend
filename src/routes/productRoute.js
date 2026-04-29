@@ -69,7 +69,7 @@ router.put(
   verifyAdmin,
   uploadProductImages.array("img", 4),
   multerErrorHandler,
-  // validateBody(updateProductSchema),
+  validateBody(updateProductSchema),
   updateProduct
 );
 

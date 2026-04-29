@@ -1,6 +1,7 @@
 // controllers/productController.js
 import mongoose from "mongoose";
 import Product from "../models/productModel.js";
+import cloudinary from "../config/cloudinary.js";
 
 
 
@@ -216,6 +217,8 @@ const toNumber = (value) => {
       sizes,
     } = req.body;
 
+    // console.log("req.files:", req.files);  // ← yeh add karo controller mein temporarily
+  // console.log("req.body:", req.body);
     // ─────────────────────────────────────────
     // 🖼️ IMAGE LOGIC
     // ─────────────────────────────────────────
@@ -342,7 +345,7 @@ const toNumber = (value) => {
     // ─────────────────────────────────────────
 
     const updateOptions = {
-      new: true,            // FIX #3: Correct Mongoose option (not returnDocument: "after")
+      returnDocument: "after",           // FIX #3: Correct Mongoose option (not returnDocument: "after")
       runValidators: true,
       // FIX #2: Removed timestamps:false — not supported in findByIdAndUpdate, does nothing
     };
