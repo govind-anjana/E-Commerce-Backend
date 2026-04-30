@@ -10,13 +10,13 @@ import SubCategory from "../models/subcategoryModel.js";
  */
 export const getSubCategories = async (req, res) => {
   try {
-    const subcategories = await SubCategory.find().populate("category", "category");
+    const subcategories = await (await SubCategory.find().populate("category", "category"));
 
     res.status(200).json({
       success: true,
       message: "Subcategories retrieved successfully",
       count: subcategories.length,
-      data: subcategories,
+      data: subcategories.reverse(),
     });
   } catch (err) {
     console.error("getSubCategories Error:", err);
