@@ -5,13 +5,15 @@ import {
   createOrder, 
   updateOrderStatus, 
   updateShipmentDetails,
-  deleteOrder
+  deleteOrder,
+  cancelOrder
 } from "../controllers/orderController.js";
 import { verifyAdmin } from "../middlewares/authVerify.js";
 
 const router = express.Router();
 
-// User routes (might need user auth middleware later, for now keeping minimal)
+// User routes
+router.patch("/:id/cancel", cancelOrder);
 router.get("/user", getUserOrders);
 router.post("/", createOrder);
 

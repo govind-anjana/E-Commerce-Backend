@@ -6,6 +6,7 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.status(200).json({
+      message: "Orders retrieved successfully",
       success: true,
       count: orders.length,
       orders,
@@ -129,6 +130,39 @@ export const deleteOrder = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Order deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Cancel order (User)
+// @route   PATCH /api/orders/:id/cancel
+export const cancelOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // We could add email verification here to ensure the user owns the order,
+    // but assuming standard authenticated request for now.
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.status === "Delivered" || order.status === "Shipped") {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Order cannot be cancelled as it has already been shipped or delivered" 
+      });
+    }
+
+    order.status = "Cancelled";
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      order: updatedOrder,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

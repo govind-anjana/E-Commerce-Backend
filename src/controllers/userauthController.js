@@ -3,8 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userauthModel.js";
 
-export const allUsers=async(req,res)=>{
-    try {
+export const allUsers = async (req, res) => {
+  try {
     const data = await User.find();
     if (!data.length) return res.status(404).json({ message: "No users found" });
     res.status(200).json({ message: "All users fetch successfully", data });
@@ -20,7 +20,7 @@ export const allUsers=async(req,res)=>{
 export const signup = async (req, res) => {
   try {
     const { username, email, phone, password } = req.body;
-    if(!username || !email || !phone || !password){
+    if (!username || !email || !phone || !password) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
@@ -67,7 +67,7 @@ export const signup = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { email, emailOtp, phoneOtp } = req.body;
-    if(!email || !emailOtp || !phoneOtp){
+    if (!email || !emailOtp || !phoneOtp) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
     const record = otpStore.get(email);
@@ -123,7 +123,7 @@ export const verifyOtp = async (req, res) => {
 export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if(!email || !password){
+    if (!email || !password) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
