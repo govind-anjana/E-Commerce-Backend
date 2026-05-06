@@ -243,3 +243,127 @@ export const UpdateProfile = async (req, res) => {
     });
   }
 };
+
+/**
+ * Initiates Forgot Password flow by sending OTP to user's phone.
+ */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ success: false, message: "Phone number is required" });
+    }
+
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User with this phone number not found" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store in memory
+    otpStore.set(phone, {
+      phone,
+      userId: user._id,
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+      type: "forgotPassword",
+      isVerified: false
+    });
+
+    // console.log(`Forgot Password OTP for ${phone}: ${otp}`);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your phone number",
+      otp // for development
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * Verifies OTP for forgot password.
+ */
+export const verifyForgotPasswordOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+      return res.status(400).json({ success: false, message: "Phone and OTP are required" });
+    }
+
+    const record = otpStore.get(phone);
+    if (!record || record.type !== "forgotPassword") {
+      return res.status(400).json({ success: false, message: "OTP session not found or invalid" });
+    }
+
+    if (record.expiresAt < Date.now()) {
+      otpStore.delete(phone);
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
+
+    if (record.otp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    // Mark as verified but keep in store for the reset step
+    record.isVerified = true;
+    otpStore.set(phone, record);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully. You can now reset your password."
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * Resets the user's password.
+ */
+export const resetPassword = async (req, res) => {
+  try {
+    const { phone, newPassword } = req.body;
+    if (!phone || !newPassword) {
+      return res.status(400).json({ success: false, message: "Phone and new password are required" });
+    }
+
+    const record = otpStore.get(phone);
+    if (!record || record.type !== "forgotPassword" || !record.isVerified) {
+      return res.status(400).json({ success: false, message: "Unauthorized or session expired. Please verify OTP again." });
+    }
+
+    const user = await User.findById(record.userId);
+    // console.log(user);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Direct update to DB
+    const updatedUser = await User.findByIdAndUpdate(
+      record.userId,
+      { password: hashedPassword },
+      { returnDocument: 'after' }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found during update" });
+    }
+
+    // Clear otp store
+    otpStore.delete(phone);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. Please login with your new password."
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
